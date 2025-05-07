@@ -22,7 +22,6 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check if redirected from an expired session
   React.useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     if (queryParams.get('session') === 'expired') {
@@ -30,7 +29,6 @@ const Login = () => {
     }
   }, [location, error]);
 
-  // Get redirect path from location state or default to home
   const from = location.state?.from || '/';
 
   const handleSubmit = async (values, { setSubmitting }) => {

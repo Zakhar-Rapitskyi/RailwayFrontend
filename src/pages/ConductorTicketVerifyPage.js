@@ -9,7 +9,6 @@ import conductorService from '../api/conductorService';
 import Loader from '../components/common/Loader';
 import { useAlert } from '../contexts/AlertContext';
 
-// Validation schema
 const ticketVerifySchema = Yup.object().shape({
   ticketNumber: Yup.string().required('Ticket number is required')
 });
@@ -29,7 +28,6 @@ const ConductorTicketVerifyPage = () => {
       const ticketData = await conductorService.verifyTicket(values.ticketNumber);
       setTicket(ticketData);
       
-      // Check if ticket is valid
       const isValid = !isPast(parseISO(ticketData.departureDatetime));
       
       if (isValid) {

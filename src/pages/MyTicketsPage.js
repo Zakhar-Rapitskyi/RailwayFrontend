@@ -42,7 +42,6 @@ const MyTicketsPage = () => {
       setCancelingTicketId(ticketId);
       try {
         await ticketService.cancelTicket(ticketId);
-        // Remove the canceled ticket from the list
         setTickets(tickets.filter(ticket => ticket.id !== ticketId));
         success('Ticket canceled successfully.');
       } catch (err) {
@@ -185,7 +184,6 @@ const MyTicketsPage = () => {
   );
 };
 
-// Ticket Card Component
 const TicketCard = ({ ticket, onShowQrCode, onCancelTicket, cancelingTicketId, isUpcoming }) => {
   const departureTime = format(parseISO(ticket.departureDatetime), 'HH:mm');
   const arrivalTime = format(parseISO(ticket.arrivalDatetime), 'HH:mm');

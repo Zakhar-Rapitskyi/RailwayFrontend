@@ -28,7 +28,6 @@ const SearchPage = () => {
   const { error } = useAlert();
   const navigate = useNavigate();
 
-  // Get initial values from URL parameters if they exist
   const initialFromId = searchParams.get('from') ? parseInt(searchParams.get('from'), 10) : '';
   const initialToId = searchParams.get('to') ? parseInt(searchParams.get('to'), 10) : '';
   const initialDate = searchParams.get('date') ? parseISO(searchParams.get('date')) : addDays(new Date(), 1);
@@ -51,10 +50,9 @@ const SearchPage = () => {
     fetchStations();
   }, [error]);
 
-  // If URL parameters exist, perform search automatically
   useEffect(() => {
     if (initialFromId && initialToId && isInitialRender.current) {
-      isInitialRender.current = false; // Отметить, что первый рендер выполнен
+      isInitialRender.current = false; 
 
       const performInitialSearch = async () => {
         const searchData = {
@@ -78,7 +76,6 @@ const SearchPage = () => {
 
     setIsSearching(true);
     try {
-      // Убедитесь, что values.departureDate - это объект Date, а не строка
       const dateToFormat = typeof values.departureDate === 'string'
         ? parseISO(values.departureDate)
         : values.departureDate;

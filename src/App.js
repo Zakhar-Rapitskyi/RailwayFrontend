@@ -4,20 +4,16 @@ import { Container } from 'react-bootstrap';
 import { AuthProvider } from './contexts/AuthContext';
 import { AlertProvider } from './contexts/AlertContext';
 
-// Layout Components
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Alert from './components/common/Alert';
 
-// Auth Components
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 
-// Common Components
 import PrivateRoute from './components/common/PrivateRoute';
 import NotFound from './components/common/NotFound';
 
-// Import page components
 import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
 import BookingPage from './pages/BookingPage';
@@ -28,7 +24,6 @@ import ProfilePage from './pages/ProfilePage';
 import ConductorTicketVerifyPage from './pages/ConductorTicketVerifyPage';
 import TicketReportsPage from './pages/TicketReportsPage';
 
-// Import stylesheets
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 

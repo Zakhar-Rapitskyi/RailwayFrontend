@@ -32,7 +32,6 @@ const AdminDashboardPage = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        // Fetch stats
         const [stations, trains, routes, schedules] = await Promise.all([
           stationService.getAllStations(),
           trainService.getAllTrains(),
@@ -40,16 +39,14 @@ const AdminDashboardPage = () => {
           scheduleService.getAllSchedules()
         ]);
 
-        // Set stats
         setStats({
           stations: stations.length,
           trains: trains.length,
           routes: routes.length,
           schedules: schedules.length,
-          tickets: 0 // We would need a special endpoint for this in a real app
+          tickets: 0 
         });
 
-        // Get latest entities (last 5)
         setLatestEntities({
           stations: stations.slice(-5).reverse(),
           trains: trains.slice(-5).reverse(),
@@ -242,7 +239,6 @@ const AdminDashboardPage = () => {
   );
 };
 
-// Stats Card Component
 const StatsCard = ({ title, count, icon, color, link }) => (
   <Card className="h-100 shadow-sm">
     <Card.Body className="text-center">
@@ -260,7 +256,6 @@ const StatsCard = ({ title, count, icon, color, link }) => (
   </Card>
 );
 
-// Latest Entities Table Component
 const LatestEntitiesTable = ({ entities, headers, renderRow, emptyMessage }) => (
   <div className="table-responsive">
     {entities.length > 0 ? (

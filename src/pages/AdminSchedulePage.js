@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Form, Button, Table, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Form, Button, Table, Alert, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { format, parseISO, addDays } from 'date-fns';
-import { FaTrain, FaRoute, FaCalendarAlt, FaClock, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaTrain, FaRoute, FaCalendarAlt, FaClock, FaPlus, FaEdit, FaTrash, FaExchangeAlt } from 'react-icons/fa';
 
 import trainService from '../api/trainService';
 import routeService from '../api/routeService';
@@ -15,17 +15,19 @@ import stationService from '../api/stationService';
 import Loader from '../components/common/Loader';
 import { useAlert } from '../contexts/AlertContext';
 
-// Validation schema
 const scheduleSchema = Yup.object().shape({
   trainId: Yup.number().required('Train is required'),
   routeId: Yup.number().required('Route is required'),
   departureDate: Yup.date().required('Departure date is required').min(new Date(), 'Date cannot be in the past')
 });
 
-// Validation schema for station time
 const stationTimeSchema = Yup.object().shape({
   routeStationId: Yup.number().required('Station is required'),
   arrivalTime: Yup.string().required('Arrival time is required').matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Time format must be HH:MM')
+});
+
+const trainChangeSchema = Yup.object().shape({
+  trainId: Yup.number().required('New train is required')
 });
 
 const AdminSchedulePage = () => {
@@ -37,10 +39,11 @@ const AdminSchedulePage = () => {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [routeStations, setRouteStations] = useState([]);
   const [showStationTimeForm, setShowStationTimeForm] = useState(false);
+  const [showTrainChangeModal, setShowTrainChangeModal] = useState(false);
+  const [scheduleToChangeTrain, setScheduleToChangeTrain] = useState(null);
   const { success, error } = useAlert();
   const navigate = useNavigate();
 
-  // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -65,7 +68,6 @@ const AdminSchedulePage = () => {
     fetchData();
   }, [error]);
 
-  // Load route stations when a route is selected
   const loadRouteStations = async (routeId) => {
     try {
       const stations = await routeService.getRouteStations(routeId);
@@ -76,7 +78,6 @@ const AdminSchedulePage = () => {
     }
   };
 
-  // Handle schedule creation
   const handleCreateSchedule = async (values, { resetForm }) => {
     setSubmitting(true);
     try {
@@ -87,7 +88,6 @@ const AdminSchedulePage = () => {
         formattedDate
       );
       
-      // Reload schedules
       const schedulesData = await scheduleService.getAllSchedules();
       setSchedules(schedulesData);
       
@@ -101,7 +101,6 @@ const AdminSchedulePage = () => {
     }
   };
 
-  // Handle setting station time
   const handleSetStationTime = async (values) => {
     setSubmitting(true);
     try {
@@ -114,7 +113,6 @@ const AdminSchedulePage = () => {
       success('Station time set successfully');
       setShowStationTimeForm(false);
       
-      // Reload schedule details
       const updatedSchedule = await scheduleService.getScheduleById(selectedSchedule.id);
       setSelectedSchedule(updatedSchedule);
     } catch (err) {
@@ -125,23 +123,44 @@ const AdminSchedulePage = () => {
     }
   };
 
-  // Handle schedule selection for station time setting
   const handleSelectSchedule = async (schedule) => {
     setSelectedSchedule(schedule);
     await loadRouteStations(schedule.route.id);
     setShowStationTimeForm(true);
   };
 
-  // Handle schedule deletion
+  const handleOpenTrainChangeModal = (schedule) => {
+    setScheduleToChangeTrain(schedule);
+    setShowTrainChangeModal(true);
+  };
+
+  const handleChangeTrain = async (values) => {
+    if (!scheduleToChangeTrain) return;
+    
+    setSubmitting(true);
+    try {
+      await scheduleService.updateScheduleTrain(scheduleToChangeTrain.id, values.trainId);
+      
+      const schedulesData = await scheduleService.getAllSchedules();
+      setSchedules(schedulesData);
+      
+      success('Train updated successfully');
+      setShowTrainChangeModal(false);
+    } catch (err) {
+      console.error('Error updating train:', err);
+      error(err.response?.data?.message || 'Failed to update train. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleDeleteSchedule = async (scheduleId) => {
     if (window.confirm('Are you sure you want to delete this schedule? This action cannot be undone.')) {
       try {
         await scheduleService.deleteSchedule(scheduleId);
         
-        // Remove from state
         setSchedules(schedules.filter(s => s.id !== scheduleId));
         
-        // Reset selected schedule if it was deleted
         if (selectedSchedule && selectedSchedule.id === scheduleId) {
           setSelectedSchedule(null);
           setShowStationTimeForm(false);
@@ -437,6 +456,14 @@ const AdminSchedulePage = () => {
                           <FaClock className="me-1" /> Set Times
                         </Button>
                         <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          className="me-2"
+                          onClick={() => handleOpenTrainChangeModal(schedule)}
+                        >
+                          <FaExchangeAlt className="me-1" /> Change Train
+                        </Button>
+                        <Button
                           variant="outline-danger"
                           size="sm"
                           onClick={() => handleDeleteSchedule(schedule.id)}
@@ -454,6 +481,72 @@ const AdminSchedulePage = () => {
           )}
         </Card.Body>
       </Card>
+
+      {/* Train Change Modal */}
+      <Modal show={showTrainChangeModal} onHide={() => setShowTrainChangeModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Change Train</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {scheduleToChangeTrain && (
+            <div className="mb-3">
+              <p><strong>Schedule:</strong> {scheduleToChangeTrain.route.name}</p>
+              <p><strong>Current Train:</strong> {scheduleToChangeTrain.train.name} ({scheduleToChangeTrain.train.totalCars} cars)</p>
+              <p><strong>Date:</strong> {format(parseISO(scheduleToChangeTrain.departureDate.toString()), 'yyyy-MM-dd')}</p>
+            </div>
+          )}
+          
+          <Formik
+            initialValues={{
+              trainId: scheduleToChangeTrain ? scheduleToChangeTrain.train.id : ''
+            }}
+            validationSchema={trainChangeSchema}
+            onSubmit={handleChangeTrain}
+            enableReinitialize
+          >
+            {({
+              values,
+              errors,
+              touched,
+              handleChange,
+              handleBlur,
+              handleSubmit
+            }) => (
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label>New Train</Form.Label>
+                  <Form.Select
+                    name="trainId"
+                    value={values.trainId}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    isInvalid={touched.trainId && errors.trainId}
+                  >
+                    <option value="">Select a train</option>
+                    {trains.map(train => (
+                      <option key={train.id} value={train.id}>
+                        {train.name} - {train.totalCars} cars
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.trainId}
+                  </Form.Control.Feedback>
+                </Form.Group>
+                
+                <div className="d-flex justify-content-end gap-2">
+                  <Button variant="secondary" onClick={() => setShowTrainChangeModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" variant="primary" disabled={submitting}>
+                    {submitting ? 'Updating...' : 'Update Train'}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </Modal.Body>
+      </Modal>
     </Container>
   );
 };

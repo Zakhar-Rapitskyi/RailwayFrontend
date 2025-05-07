@@ -52,6 +52,20 @@ const scheduleService = {
   },
 
   /**
+   * Update schedule train (Admin only)
+   * @param {number} scheduleId - Schedule ID
+   * @param {number} trainId - New train ID
+   * @returns {Promise} - Promise with updated schedule data
+   */
+  updateScheduleTrain: async (scheduleId, trainId) => {
+    const response = await axiosInstance.put(
+      `${API_PATH}/${scheduleId}/train`,
+      { trainId }
+    );
+    return response.data;
+  },
+
+  /**
    * Delete a schedule (Admin only)
    * @param {number} id - Schedule ID
    * @returns {Promise} - Promise with response

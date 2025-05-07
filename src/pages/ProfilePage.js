@@ -32,13 +32,9 @@ const ProfilePage = () => {
   const handleUpdateProfile = async (values, { setSubmitting }) => {
     setIsUpdating(true);
     
-    // Simulate API call to update profile
     try {
-      // This would be a real API call in a production app
-      // Replace with actual API call to update user profile
       console.log('Updating profile with values:', values);
       
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       success('Profile updated successfully');
@@ -129,7 +125,7 @@ const ProfilePage = () => {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         isInvalid={touched.email && errors.email}
-                        disabled  // Email is usually not updatable
+                        disabled
                       />
                       <Form.Control.Feedback type="invalid">
                         {errors.email}

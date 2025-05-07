@@ -34,7 +34,6 @@ const Register = () => {
     setIsLoading(true);
     setSubmitting(true);
     
-    // Remove confirmPassword from values before sending to API
     const { confirmPassword, ...registerData } = values;
     
     try {

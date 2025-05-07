@@ -28,10 +28,8 @@ const BookingPage = () => {
   const [availableSeats, setAvailableSeats] = useState([]);
   const [isBooking, setIsBooking] = useState(false);
 
-// Используем useRef для сохранения значений из URL
 const urlParamsRef = useRef({ fromId: null, toId: null });
 
-// Первый useEffect для чтения URL параметров
 useEffect(() => {
   const searchParams = new URLSearchParams(location.search);
   
@@ -50,7 +48,6 @@ useEffect(() => {
   }
 }, [location.search]);
 
-// Второй useEffect для загрузки данных
 useEffect(() => {
   const fetchScheduleData = async () => {
     setLoading(true);
@@ -58,7 +55,6 @@ useEffect(() => {
       const scheduleData = await scheduleService.getScheduleById(scheduleId);
       setSchedule(scheduleData);
       
-      // Используем urlParamsRef для проверки, есть ли значения из URL
       if (!urlParamsRef.current.fromId && scheduleData.route.stations.length > 0) {
         console.log("Setting default departure station");
         setDepartureStationId(scheduleData.route.stations[0].station.id);
@@ -69,14 +65,12 @@ useEffect(() => {
         setArrivalStationId(scheduleData.route.stations[scheduleData.route.stations.length - 1].station.id);
       }
         
-        // Extract stations from the route
         const routeStations = scheduleData.route.stations.map(station => ({
           id: station.station.id,
           name: station.station.name,
           order: station.stationOrder
         }));
         
-        // Sort stations by their order on the route
         routeStations.sort((a, b) => a.order - b.order);
         setStations(routeStations);
         
@@ -94,7 +88,6 @@ useEffect(() => {
     }
   }, [scheduleId, navigate, error, departureStationId, arrivalStationId]);
 
-  // Load available seats when car is selected
   useEffect(() => {
     const fetchAvailableSeats = async () => {
       if (!scheduleId || !selectedCar) return;
@@ -140,7 +133,6 @@ useEffect(() => {
       return;
     }
 
-    // Validate that departure comes before arrival on the route
     const departureStation = stations.find(s => s.id === departureStationId);
     const arrivalStation = stations.find(s => s.id === arrivalStationId);
     
